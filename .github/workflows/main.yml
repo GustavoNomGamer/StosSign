@@ -1,0 +1,26 @@
+name: Gerar Certificado
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Instalar ferramentas
+        run: gem install sigh cert
+      - name: Criar arquivos da Apple
+        env:
+          FASTLANE_USER: ${{ secrets.APPLE_ID }}
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+        run: |
+          fastlane cert --development -u "$FASTLANE_USER"
+          fastlane sigh --development -u "$FASTLANE_USER"
+      - name: Compactar Certificados
+        run: zip -r certificados.zip *.p12 *.mobileprovision
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Certificados-ESign
+          path: certificados.zip
